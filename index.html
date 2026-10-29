@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0d0f11">
-<meta name="description" content="上傳照片，拖一條水平線，把風景變成天空之鏡。所有運算都在瀏覽器完成，照片不會上傳。">
-<title>天空之鏡 — 把風景變成一水面</title>
+<meta name="description" content="上傳風景照，拖一條白線決定水面位置，下半部就變成倒影，再下載成圖片。全程在瀏覽器完成，照片不會上傳。">
+<title>天空之鏡 — 把風景照變成水面倒影</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -16,7 +16,7 @@
     <img class="brand-mark" src="assets/favicon.svg" alt="" width="30" height="30">
     <div class="brand-text">
       <h1 data-i18n="appName">天空之鏡</h1>
-      <p data-i18n="tagline">把風景變成一水面</p>
+      <p data-i18n="tagline">把風景照變成水面倒影</p>
     </div>
   </div>
   <div class="topbar-side">
@@ -39,9 +39,9 @@
           <circle cx="16" cy="19" r="3.2" stroke="currentColor" stroke-width="1.6"/>
           <path d="M8 34l9.5-10 7.5 7.5L31 25l9 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <p class="dz-title" data-i18n="dzTitle">拖放照片到這裡</p>
+        <p class="dz-title" data-i18n="dzTitle">拖放風景照到這裡</p>
         <p class="dz-sub"><span data-i18n="dzOr">或</span> <span class="dz-link" data-i18n="dzChoose">選擇照片</span></p>
-        <p class="dz-hint" data-i18n="dzHint">支援 JPEG、PNG、WebP・也可直接貼上（Ctrl/⌘+V）</p>
+        <p class="dz-hint" data-i18n="dzHint">上傳後拖曳白線決定水面位置，再調整倒影與水色。支援 JPEG、PNG、WebP，也可直接貼上（Ctrl/⌘+V）。</p>
         <p class="dz-privacy" data-i18n="privacyShort">照片不會上傳，只在你的瀏覽器裡處理。</p>
       </div>
 
@@ -115,18 +115,18 @@
           <div class="group-head">
             <h2 data-i18n="groupWaterline">水面位置</h2>
             <div class="group-actions">
-              <button type="button" class="link-btn" id="levelBtn" data-i18n="levelBtn">校正水平</button>
+              <button type="button" class="link-btn" id="levelBtn" data-i18n="levelBtn">擺正水平線</button>
               <button type="button" class="link-btn" id="resetHorizon" data-i18n="resetHorizon">回到 50%</button>
             </div>
           </div>
           <div class="control">
             <div class="control-head">
-              <label for="horizonRange" data-i18n="horizon">水平線</label>
+              <label for="horizonRange" data-i18n="horizon">水平線高度</label>
               <div class="horizon-tools">
                 <button type="button" class="step-btn" id="horizonMinus" aria-label="水平線往上 1 像素" data-i18n-aria="horizonMinusAria">−1px</button>
                 <span class="number-wrap">
                   <input type="number" id="horizonNumber" min="0" max="100" step="0.1"
-                         inputmode="decimal" value="50.00" aria-label="水平線百分比" data-i18n-aria="horizonNumberAria">
+                         inputmode="decimal" value="50.00" aria-label="水面線高度百分比" data-i18n-aria="horizonNumberAria">
                   <span class="unit">%</span>
                 </span>
                 <button type="button" class="step-btn" id="horizonPlus" aria-label="水平線往下 1 像素" data-i18n-aria="horizonPlusAria">+1px</button>
@@ -136,13 +136,13 @@
           </div>
           <div class="control">
             <div class="control-head">
-              <label for="tiltRange" data-i18n="tilt">水平角度</label>
+              <label for="tiltRange" data-i18n="tilt">水面傾斜角度</label>
               <span class="control-value" id="tiltValue">0.0°</span>
             </div>
             <input type="range" id="tiltRange" min="-89" max="89" step="0.1" value="0"
-                   aria-label="水平線角度" data-i18n-aria="tiltAria">
+                   aria-label="水面傾斜角度" data-i18n-aria="tiltAria">
           </div>
-          <p class="hint" data-i18n="horizonHint">拖曳白線可移動水面，拖曳兩端圓點可傾斜；也可用上面的數字微調。</p>
+          <p class="hint" data-i18n="horizonHint">拖曳畫面中的白線決定水面高度；拖兩端的圓點可以傾斜。也可以用上面的數字微調。</p>
         </section>
 
         <section class="group">
@@ -166,7 +166,7 @@
 
           <details class="group feature" id="featureNoise" open>
             <summary class="advanced-summary">
-              <span data-i18n="featNoise">噪聲位移</span>
+              <span data-i18n="featNoise">不規則波紋</span>
               <svg class="chev" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
@@ -176,7 +176,7 @@
 
           <details class="group feature" id="featurePersp" open>
             <summary class="advanced-summary">
-              <span data-i18n="featPersp">深度透視</span>
+              <span data-i18n="featPersp">遠近透視</span>
               <svg class="chev" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
@@ -186,7 +186,7 @@
 
         </details>
 
-        <p class="hint hint--foot" id="hintFoot" data-i18n="hintFoot">倒影只取自水平線以上的畫面。被前景遮住的景物，水裡不會出現。</p>
+        <p class="hint hint--foot" id="hintFoot" data-i18n="hintFoot">倒影只用水平線以上的畫面。被前景擋住的景物，水裡不會出現。</p>
       </div>
 
       <div class="pane" id="paneDownload" role="tabpanel" aria-labelledby="tabDownload" hidden>
@@ -218,7 +218,7 @@
               <button type="button" class="link-btn" id="cancelExport" data-i18n="cancel">取消</button>
             </div>
           </div>
-          <p class="hint" data-i18n="downloadHint">下載時會用所選尺寸重新完整運算；完成後自動儲存。</p>
+          <p class="hint" data-i18n="downloadHint">輸出尺寸就是裁切框內的原圖像素，不會放大。</p>
         </div>
       </div>
     </div>
