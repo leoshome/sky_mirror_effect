@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="天空之鏡">
+  <rect width="64" height="64" rx="14" fill="#0d0f11"/>
+  <circle cx="32" cy="24" r="9" fill="#6fe3c4"/>
+  <path d="M9 34h46" stroke="#e9edf0" stroke-width="2" stroke-linecap="round" opacity=".85"/>
+  <path d="M14 43c4.5 0 4.5 3 9 3s4.5-3 9-3 4.5 3 9 3 4.5-3 9-3"
+        stroke="#6fe3c4" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/>
+  <ellipse cx="32" cy="52" rx="15" ry="4" fill="#6fe3c4" opacity=".16"/>
+</svg>

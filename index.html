@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0f11">
+<meta name="description" content="上傳照片，拖一條水平線，把風景變成天空之鏡。所有運算都在瀏覽器完成，照片不會上傳。">
+<title>天空之鏡 — 把風景變成一水面</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <img class="brand-mark" src="assets/favicon.svg" alt="" width="30" height="30">
+    <div class="brand-text">
+      <h1 data-i18n="appName">天空之鏡</h1>
+      <p data-i18n="tagline">把風景變成一水面</p>
+    </div>
+  </div>
+  <div class="topbar-side">
+    <button type="button" class="topbar-open" id="openPhotoBtn" data-i18n="openPhoto">換照片</button>
+    <div class="lang-toggle" role="group" aria-label="語言" data-i18n-aria="langAria">
+      <button type="button" data-lang="zh" aria-pressed="true">繁</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+    <p class="privacy"><span class="privacy-dot" aria-hidden="true"></span><span data-i18n="privacy">照片不會離開你的瀏覽器</span></p>
+  </div>
+</header>
+
+<main class="workspace">
+  <section class="stage" id="stage" aria-label="預覽區" data-i18n-aria="stageAria">
+    <div class="stage-inner" id="stageInner">
+
+      <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="上傳照片" data-i18n-aria="uploadAria">
+        <svg class="dz-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+          <rect x="5" y="9" width="38" height="30" rx="4" stroke="currentColor" stroke-width="1.6"/>
+          <circle cx="16" cy="19" r="3.2" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M8 34l9.5-10 7.5 7.5L31 25l9 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <p class="dz-title" data-i18n="dzTitle">拖放照片到這裡</p>
+        <p class="dz-sub"><span data-i18n="dzOr">或</span> <span class="dz-link" data-i18n="dzChoose">選擇照片</span></p>
+        <p class="dz-hint" data-i18n="dzHint">支援 JPEG、PNG、WebP・也可直接貼上（Ctrl/⌘+V）</p>
+        <p class="dz-privacy" data-i18n="privacyShort">照片不會上傳，只在你的瀏覽器裡處理。</p>
+      </div>
+
+      <div class="canvas-frame" id="canvasFrame" hidden>
+        <canvas id="preview"></canvas>
+
+        <div class="horizon" id="horizon" tabindex="0" role="slider"
+             aria-label="水平線位置" data-i18n-aria="horizonAria"
+             aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="50%">
+          <span class="horizon-handle horizon-handle--left" data-end="left" aria-hidden="true"></span>
+          <span class="horizon-handle horizon-handle--right" data-end="right" aria-hidden="true"></span>
+        </div>
+        <div class="horizon-label" id="horizonLabel">50.00%</div>
+
+        <div class="crop-layer" id="cropLayer" hidden>
+          <div class="crop-frame" id="cropFrame" tabindex="0" role="group"
+               aria-label="下載裁切範圍" data-i18n-aria="cropFrameAria">
+            <span class="crop-size" id="cropSize"></span>
+            <span class="crop-grid" aria-hidden="true"></span>
+            <span class="crop-handle crop-handle--nw" data-handle="nw" aria-hidden="true"></span>
+            <span class="crop-handle crop-handle--n" data-handle="n" aria-hidden="true"></span>
+            <span class="crop-handle crop-handle--ne" data-handle="ne" aria-hidden="true"></span>
+            <span class="crop-handle crop-handle--e" data-handle="e" aria-hidden="true"></span>
+            <span class="crop-handle crop-handle--se" data-handle="se" aria-hidden="true"></span>
+            <span class="crop-handle crop-handle--s" data-handle="s" aria-hidden="true"></span>
+            <span class="crop-handle crop-handle--sw" data-handle="sw" aria-hidden="true"></span>
+            <span class="crop-handle crop-handle--w" data-handle="w" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <div class="stage-tools">
+          <button type="button" class="tool-btn" id="compareBtn" aria-pressed="false" data-i18n="compare">看原圖</button>
+          <button type="button" class="tool-btn" id="resetBtn" data-i18n="reset">重設</button>
+        </div>
+        <div class="stage-meta" id="stageMeta"></div>
+      </div>
+
+      <div class="loading" id="loading" hidden>
+        <span class="spinner" aria-hidden="true"></span>
+        <span id="loadingText" data-i18n="loading">讀取照片…</span>
+      </div>
+    </div>
+  </section>
+
+  <aside class="panel is-peek" id="panel" aria-label="設定面板" data-i18n-aria="panelAria">
+    <div class="sheet-head">
+      <div class="sheet-grip" id="sheetGrip" role="button" tabindex="0"
+           aria-label="展開或收合面板" data-i18n-aria="gripAria" aria-expanded="false"><span></span></div>
+      <div class="tabs" role="tablist">
+        <button class="tab is-active" id="tabAdjust" role="tab" aria-selected="true"
+                aria-controls="paneAdjust" type="button" data-i18n="tabAdjust">調整</button>
+        <button class="tab" id="tabDownload" role="tab" aria-selected="false"
+                aria-controls="paneDownload" type="button" data-i18n="tabDownload">下載</button>
+      </div>
+    </div>
+
+    <div class="panel-scroll">
+      <div class="pane" id="paneAdjust" role="tabpanel" aria-labelledby="tabAdjust">
+
+        <section class="group style-block">
+          <div class="group-head">
+            <h2 data-i18n="groupStyle">水波風格</h2>
+            <div class="group-actions">
+              <button type="button" class="link-btn" id="resetParamsBtn" data-i18n="resetParams">重設參數</button>
+            </div>
+          </div>
+          <div class="segmented" id="styleOptions" role="radiogroup" aria-label="水波風格" data-i18n-aria="groupStyle"></div>
+        </section>
+
+        <section class="group">
+          <div class="group-head">
+            <h2 data-i18n="groupWaterline">水面位置</h2>
+            <div class="group-actions">
+              <button type="button" class="link-btn" id="levelBtn" data-i18n="levelBtn">校正水平</button>
+              <button type="button" class="link-btn" id="resetHorizon" data-i18n="resetHorizon">回到 50%</button>
+            </div>
+          </div>
+          <div class="control">
+            <div class="control-head">
+              <label for="horizonRange" data-i18n="horizon">水平線</label>
+              <div class="horizon-tools">
+                <button type="button" class="step-btn" id="horizonMinus" aria-label="水平線往上 1 像素" data-i18n-aria="horizonMinusAria">−1px</button>
+                <span class="number-wrap">
+                  <input type="number" id="horizonNumber" min="0" max="100" step="0.1"
+                         inputmode="decimal" value="50.00" aria-label="水平線百分比" data-i18n-aria="horizonNumberAria">
+                  <span class="unit">%</span>
+                </span>
+                <button type="button" class="step-btn" id="horizonPlus" aria-label="水平線往下 1 像素" data-i18n-aria="horizonPlusAria">+1px</button>
+              </div>
+            </div>
+            <input type="range" id="horizonRange" min="0" max="100" step="0.1" value="50">
+          </div>
+          <div class="control">
+            <div class="control-head">
+              <label for="tiltRange" data-i18n="tilt">水平角度</label>
+              <span class="control-value" id="tiltValue">0.0°</span>
+            </div>
+            <input type="range" id="tiltRange" min="-89" max="89" step="0.1" value="0"
+                   aria-label="水平線角度" data-i18n-aria="tiltAria">
+          </div>
+          <p class="hint" data-i18n="horizonHint">拖曳白線可移動水面，拖曳兩端圓點可傾斜；也可用上面的數字微調。</p>
+        </section>
+
+        <section class="group">
+          <h2 data-i18n="groupReflection">倒影</h2>
+          <div id="controlsReflection"></div>
+        </section>
+
+        <section class="group">
+          <h2 data-i18n="groupWater">水色</h2>
+          <div id="controlsWater"></div>
+        </section>
+
+        <details class="group advanced" id="advancedGroup">
+          <summary class="advanced-summary">
+            <span data-i18n="advanced">進階水波</span>
+            <svg class="chev" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </summary>
+          <div id="controlsAdvanced"></div>
+
+          <details class="group feature" id="featureNoise" open>
+            <summary class="advanced-summary">
+              <span data-i18n="featNoise">噪聲位移</span>
+              <svg class="chev" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </summary>
+            <div id="controlsNoise"></div>
+          </details>
+
+          <details class="group feature" id="featurePersp" open>
+            <summary class="advanced-summary">
+              <span data-i18n="featPersp">深度透視</span>
+              <svg class="chev" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </summary>
+            <div id="controlsPersp"></div>
+          </details>
+
+        </details>
+
+        <p class="hint hint--foot" id="hintFoot" data-i18n="hintFoot">倒影只取自水平線以上的畫面。被前景遮住的景物，水裡不會出現。</p>
+      </div>
+
+      <div class="pane" id="paneDownload" role="tabpanel" aria-labelledby="tabDownload" hidden>
+        <section class="group">
+          <h2 data-i18n="outputSize">裁切比例</h2>
+          <div class="segmented" id="ratioOptions" role="radiogroup" aria-label="裁切比例" data-i18n-aria="outputSizeAria"></div>
+          <p class="estimate" id="estimate">—</p>
+          <p class="hint" id="cropNote" data-i18n="cropNote">拖曳框內可移動；拉四角或四邊可調整大小。</p>
+        </section>
+
+        <section class="group">
+          <h2 data-i18n="format">格式</h2>
+          <div class="segmented" id="formatOptions" role="radiogroup" aria-label="輸出格式" data-i18n-aria="formatAria"></div>
+          <div class="control control-quality" id="qualityRow">
+            <div class="control-head">
+              <label for="quality" data-i18n="jpegQuality">JPEG 品質</label>
+              <span class="control-value" id="qualityValue">92</span>
+            </div>
+            <input type="range" id="quality" min="60" max="100" step="1" value="92">
+          </div>
+        </section>
+
+        <div class="export-actions">
+          <button type="button" class="primary-btn" id="exportBtn" disabled data-i18n="downloadBtn">下載圖片</button>
+          <div class="export-progress" id="exportProgress" hidden>
+            <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+            <div class="progress-meta">
+              <span id="progressText">0%</span>
+              <button type="button" class="link-btn" id="cancelExport" data-i18n="cancel">取消</button>
+            </div>
+          </div>
+          <p class="hint" data-i18n="downloadHint">下載時會用所選尺寸重新完整運算；完成後自動儲存。</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<input type="file" id="fileInput" accept="image/*" hidden>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="render.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

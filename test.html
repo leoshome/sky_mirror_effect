@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SkyMirror 引擎測試</title>
+<style>
+  :root { color-scheme: dark; }
+  body {
+    margin: 0; padding: 32px;
+    background: #0d0f11; color: #e8ecef;
+    font: 14px/1.6 system-ui, -apple-system, "Segoe UI", "Noto Sans TC", sans-serif;
+  }
+  h1 { font-size: 18px; font-weight: 600; letter-spacing: .02em; }
+  h2 { font-size: 14px; font-weight: 600; margin-top: 32px; color: #9aa7b2; }
+  .panel { max-width: 980px; margin: 0 auto; }
+  ul { list-style: none; padding: 0; margin: 16px 0; }
+  li {
+    display: flex; gap: 10px; align-items: baseline;
+    padding: 8px 12px; border: 1px solid rgba(255,255,255,.08);
+    border-radius: 8px; margin-bottom: 8px; background: #121518;
+  }
+  .tag { font-weight: 700; font-size: 12px; padding: 1px 8px; border-radius: 999px; }
+  .pass .tag { color: #0b1a15; background: #6fe3c4; }
+  .fail .tag { color: #2a0b0b; background: #ff8b7a; }
+  .name { font-weight: 600; }
+  .detail { color: #8b98a4; font-size: 12px; }
+  #summary { font-size: 15px; font-weight: 700; margin-top: 8px; }
+  button {
+    background: #6fe3c4; color: #06201a; border: 0; border-radius: 8px;
+    padding: 9px 16px; font: inherit; font-weight: 700; cursor: pointer;
+  }
+  button:hover { filter: brightness(1.08); }
+  #previewWrap { margin-top: 16px; }
+  .previews { display: flex; gap: 12px; flex-wrap: wrap; }
+  .previews figure { margin: 0; max-width: 32%; }
+  .previews figcaption { font-size: 12px; color: #9aa7b2; margin-bottom: 6px; }
+  .previews canvas { width: 100%; height: auto; display: block; border-radius: 10px; }
+  .hint { color: #8b98a4; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="panel">
+  <h1>SkyMirror 引擎測試</h1>
+  <p class="hint">開啟這個檔案即可執行；不需要伺服器。斷言內容在 engine-tests.js（與 Node 端跑器共用）。</p>
+
+  <h2>單元斷言</h2>
+  <ul id="results"></ul>
+  <div id="summary">執行中…</div>
+
+  <h2>合成圖預覽（兩種水波風格）</h2>
+  <button id="run">跑合成圖</button>
+  <p class="hint">上半天空＋建築，下半淺灰；按下後下半應變成倒影。左起：自然波場、平靜湖水。</p>
+  <div id="previewWrap" class="previews">
+    <figure><figcaption>自然波場</figcaption><canvas id="previewNat"></canvas></figure>
+    <figure><figcaption>平靜湖水</figcaption><canvas id="previewCalm"></canvas></figure>
+  </div>
+
+  <h2>特徵示範（基底 × 特徵）</h2>
+  <p class="hint">在同一張合成圖上開啟兩種特徵：噪聲位移、深度透視。</p>
+  <div id="featureWrap" class="previews">
+    <figure><figcaption>自然波場＋噪聲</figcaption><canvas id="featNoise"></canvas></figure>
+    <figure><figcaption>自然波場＋透視</figcaption><canvas id="featPersp"></canvas></figure>
+  </div>
+</div>
+
+<script src="render.js"></script>
+<script src="engine-tests.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var S = window.SkyMirror;
+  if (!S) {
+    document.getElementById('summary').textContent = 'FAIL：render.js 沒有正確載入';
+    return;
+  }
+
+  var results = EngineTests.runAll(S);
+  var passed = results.filter(function (r) { return r.ok; }).length;
+  var list = document.getElementById('results');
+  results.forEach(function (r) {
+    var li = document.createElement('li');
+    li.className = r.ok ? 'pass' : 'fail';
+    li.innerHTML = '<span class="tag">' + (r.ok ? 'PASS' : 'FAIL') + '</span>' +
+      '<span class="name"></span><span class="detail"></span>';
+    li.querySelector('.name').textContent = r.name;
+    li.querySelector('.detail').textContent = r.ok ? '' : '— ' + r.detail;
+    list.appendChild(li);
+  });
+  var summary = document.getElementById('summary');
+  summary.textContent = passed + '/' + results.length + (passed === results.length ? ' PASS' : ' FAIL');
+  summary.style.color = passed === results.length ? '#6fe3c4' : '#ff8b7a';
+
+  document.getElementById('run').addEventListener('click', function () {
+    var canvas = document.getElementById('preview');
+    var w = 1200, h = 800;
+    var maker = document.createElement('canvas');
+    maker.width = w; maker.height = h;
+    var ctx = maker.getContext('2d');
+
+    var sky = ctx.createLinearGradient(0, 0, 0, h * 0.5);
+    sky.addColorStop(0, '#1d3d63');
+    sky.addColorStop(0.55, '#7fa9cf');
+    sky.addColorStop(1, '#e9d7bd');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, w, h * 0.5);
+
+    ctx.fillStyle = 'rgba(255,255,255,.55)';
+    for (var i = 0; i < 7; i++) {
+      ctx.beginPath();
+      ctx.ellipse(140 + i * 150, 130 + (i % 3) * 44, 90, 22, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = '#2a2f36';
+    for (var b = 0; b < 6; b++) {
+      var bw = 100 + b * 14;
+      var bh = 120 + (b % 4) * 70;
+      ctx.fillRect(60 + b * 185, h * 0.5 - bh, bw, bh);
+      ctx.fillStyle = 'rgba(255,220,150,.55)';
+      for (var wy = 0; wy < 3; wy++) {
+        for (var wx = 0; wx < 2; wx++) {
+          ctx.fillRect(74 + b * 185 + wx * 40, h * 0.5 - bh + 24 + wy * 38, 18, 22);
+        }
+      }
+      ctx.fillStyle = '#2a2f36';
+    }
+
+    ctx.fillStyle = '#b9b2a4';
+    ctx.fillRect(0, h * 0.5, w, h * 0.38);
+    ctx.fillStyle = '#cfc7b6';
+    ctx.fillRect(0, h * 0.5, w, 4);
+
+    var states = {
+      previewNat: { ...S.DEFAULTS },
+      previewCalm: { ...S.DEFAULTS, style: 'calm', ripple: 40, scale: 1.0, tint: 35 },
+      featNoise: { ...S.DEFAULTS, noiseAmt: 70, noiseScale: 1.2 },
+      featPersp: { ...S.DEFAULTS, perspAmt: 60 }
+    };
+    Object.keys(states).forEach(function (id) {
+      var canvas = document.getElementById(id);
+      canvas.style.width = '320px';
+      canvas.style.height = Math.round(320 * h / w) + 'px';
+      S.renderPreview(canvas, maker, states[id]);
+    });
+  });
+})();
+</script>
+</body>
+</html>
