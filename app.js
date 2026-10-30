@@ -68,6 +68,13 @@
       ctrlFade: '遠處淡出',
       ctrlTransparency: '水面透明度',
       groupStyle: '水波風格',
+      exampleTitle: '線上製作天空之鏡倒影照片',
+      exampleBody1: '「天空之鏡」是鹽湖或雨後薄水把整片天空翻到地面的景象。上傳風景照、拖白線定出水面位置，線以下就變成倒影，可調倒影長度、水色與水波；照片不會上傳，全部在瀏覽器內完成。',
+      exampleBeforeAlt: '十個人站在草原稜線上的剪影，天空布滿雲層，下半部是一片暗色草地，尚未套用倒影效果',
+      exampleAfterAlt: '同一張剪影照片套用天空之鏡效果後，下半部變成鏡面水面，映出整片天空與每個人的倒影',
+      exampleCaption: '左：原始照片。右：同一張照片套用倒影後的結果，由這個工具直接輸出。',
+      exampleTagBefore: '原始',
+      exampleTagAfter: '套用後',
       styleCalm: '平靜湖水',
       ctrlCalmAmp: '波浪大小',
       ctrlCalmScale: '波浪間距',
@@ -156,6 +163,13 @@
       ctrlFade: 'Distance fade',
       ctrlTransparency: 'Water transparency',
       groupStyle: 'Water style',
+      exampleTitle: 'Make a sky-mirror reflection photo online',
+      exampleBody1: 'A "sky mirror" is the thin sheet of water on a salt flat after rain that flips the whole sky onto the ground. Upload a landscape, drag the white line to set where the water starts, and everything below it becomes a reflection you can tune. Your photo never leaves the browser.',
+      exampleBeforeAlt: 'Silhouettes of ten people standing on a grassy ridge under a cloudy sky, the lower half plain dark grass, before the reflection effect',
+      exampleAfterAlt: 'The same silhouette photo with the sky-mirror effect applied: the lower half becomes a mirror surface reflecting the sky and every person',
+      exampleCaption: 'Left: the original photo. Right: the same photo after the reflection, exported directly by this tool.',
+      exampleTagBefore: 'Before',
+      exampleTagAfter: 'After',
       styleCalm: 'Calm lake',
       ctrlCalmAmp: 'Wave size',
       ctrlCalmScale: 'Wave spacing',
@@ -355,6 +369,7 @@
 
   var stage = $('stage');
   var stageInner = $('stageInner');
+  var emptyState = $('emptyState');
   var dropzone = $('dropzone');
   var frameEl = $('canvasFrame');
   var canvas = $('preview');
@@ -587,6 +602,9 @@
 
     Array.prototype.forEach.call(document.querySelectorAll('[data-i18n]'), function (el) {
       el.textContent = t(el.getAttribute('data-i18n'));
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-i18n-alt]'), function (el) {
+      el.setAttribute('alt', t(el.getAttribute('data-i18n-alt')));
     });
     Array.prototype.forEach.call(document.querySelectorAll('[data-i18n-aria]'), function (el) {
       el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
@@ -1170,7 +1188,7 @@
   }
 
   function showEditor() {
-    dropzone.hidden = true;
+    emptyState.hidden = true;
     frameEl.hidden = false;
     stageMeta.textContent = image.width + ' × ' + image.height;
     fitCanvas();

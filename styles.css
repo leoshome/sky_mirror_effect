@@ -212,15 +212,21 @@ button { cursor: pointer; }
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 26px;
+  padding: 18px;
 }
 
 /* 空白狀態 */
 
 .dropzone {
   position: relative;
-  width: min(520px, 100%);
-  padding: 44px 28px;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  container-type: size; /* 範例圖用 cqw 依框的實際寬度決定大小 */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 22px 26px;
   text-align: center;
   border: 1.5px dashed rgba(255, 255, 255, .14);
   border-radius: 16px;
@@ -234,11 +240,75 @@ button { cursor: pointer; }
   background: var(--accent-dim);
 }
 
-.dz-icon {
-  width: 44px;
-  height: 44px;
-  margin-bottom: 16px;
-  color: rgba(255, 255, 255, .34);
+/* 空白狀態裡的範例對照：一眼看到成品長什麼樣，點擊仍會穿透到 dropzone 開檔 */
+
+.dz-example {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto 22px;
+  pointer-events: none;
+}
+
+.dz-pair {
+  flex: 1 1 auto;
+  min-height: 0;
+  /* 對照圖以高度驅動寬度（圖是 4:3）。
+     上限 = 框寬扣掉內距與間隙後，單張圖在 4:3 下的高度；
+     框變窄時上限要跟著縮，否則寬度會被 max-width 夾住而壓扁圖片。
+     364px 是不支援 container query 時的退路（980 / 2 / (4/3)）。 */
+  max-height: 364px;
+  max-height: min(364px, calc((100cqw - 10px) * 0.375));
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.dz-shot {
+  position: relative;
+  height: 100%;
+  aspect-ratio: 1280 / 960;
+  min-width: 0;
+  max-width: calc(50% - 5px);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #090b0d;
+  box-shadow: 0 18px 40px -22px rgba(0, 0, 0, .85);
+}
+
+.dz-shot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dz-tag {
+  position: absolute;
+  top: 9px;
+  left: 9px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(9, 11, 13, .74);
+  border: 1px solid var(--line);
+  color: var(--text-2);
+  font-size: 10.5px;
+  line-height: 1.5;
+  letter-spacing: .02em;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.dz-caption {
+  flex: 0 0 auto;
+  margin: 9px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
 }
 
 .dz-title {
@@ -1202,4 +1272,56 @@ input[type="range"]::-moz-range-thumb {
     transition-duration: .01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ---------- 空白狀態的說明文字 ---------- */
+
+.empty-state {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.empty-head {
+  flex: 0 0 auto;
+  max-width: 820px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.empty-title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: -.01em;
+  color: var(--text);
+}
+
+.empty-body {
+  margin: 8px 0 0;
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+@media (max-width: 600px) {
+  .empty-state { gap: 12px; }
+  .empty-title { font-size: 16px; }
+  .empty-body { margin-top: 6px; font-size: 12.5px; line-height: 1.65; }
+  .dropzone { padding: 16px 14px; }
+  .dz-example { margin-bottom: 16px; }
+  .dz-pair { gap: 7px; max-height: min(364px, calc((100cqw - 7px) * 0.375)); }
+  .dz-shot { border-radius: 8px; }
+  .dz-tag { top: 6px; left: 6px; padding: 1px 6px; font-size: 9.5px; }
+  .dz-caption { margin-top: 7px; font-size: 11px; }
+  .dz-title { font-size: 14px; }
+  .dz-hint { margin-top: 10px; font-size: 11px; }
+}
+
+/* 手機底部面板是 fixed，空白狀態尾端要讓開，否則被面板蓋住 */
+@media (max-width: 899px) {
+  .empty-state { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
 }

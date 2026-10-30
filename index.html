@@ -5,13 +5,53 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0d0f11">
 <meta name="description" content="上傳風景照，拖一條白線決定水面位置，下半部就變成倒影，再下載成圖片。全程在瀏覽器完成，照片不會上傳。">
+<link rel="canonical" href="https://leoshome.github.io/sky_mirror_effect/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="天空之鏡">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:url" content="https://leoshome.github.io/sky_mirror_effect/">
+<meta property="og:title" content="天空之鏡 — 把風景照變成水面倒影">
+<meta property="og:description" content="上傳風景照，拖一條白線決定水面位置，下半部就變成倒影，再下載成圖片。全程在瀏覽器完成，照片不會上傳。">
+<meta property="og:image" content="https://leoshome.github.io/sky_mirror_effect/assets/og.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="一群人站在草原稜線上的剪影，套用天空之鏡倒影效果後下半部變成鏡面水面">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="天空之鏡 — 把風景照變成水面倒影">
+<meta name="twitter:description" content="上傳風景照，拖一條白線決定水面位置，下半部就變成倒影。照片不會上傳，全程在瀏覽器完成。">
+<meta name="twitter:image" content="https://leoshome.github.io/sky_mirror_effect/assets/og.jpg">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "天空之鏡",
+  "alternateName": "Sky Mirror",
+  "url": "https://leoshome.github.io/sky_mirror_effect/",
+  "description": "把風景照變成水面倒影的線上工具：拖一條白線決定水面位置，下半部即時變成倒影，可調倒影長度、水色與水波，並下載原像素圖片。照片不會上傳，全部在瀏覽器內完成。",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Any",
+  "browserRequirements": "需要 JavaScript 與 Canvas 2D",
+  "inLanguage": ["zh-Hant", "en"],
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "TWD" },
+  "screenshot": "https://leoshome.github.io/sky_mirror_effect/assets/sample-after.webp",
+  "featureList": [
+    "拖曳水面線決定水面位置，可傾斜 ±89°",
+    "倒影長度、水色、水面透明度可調",
+    "三種水波風格：平靜湖水、鹽湖天空之鏡、山泉池塘",
+    "下載即裁切，輸出原像素不放大",
+    "純前端運算，照片不上傳"
+  ]
+}
+</script>
 <title>天空之鏡 — 把風景照變成水面倒影</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<header class="topbar">
+<header class="topbar" id="top">
   <div class="brand">
     <img class="brand-mark" src="assets/favicon.svg" alt="" width="30" height="30">
     <div class="brand-text">
@@ -33,16 +73,34 @@
   <section class="stage" id="stage" aria-label="預覽區" data-i18n-aria="stageAria">
     <div class="stage-inner" id="stageInner">
 
+      <div class="empty-state" id="emptyState">
+        <div class="empty-head">
+          <h2 class="empty-title" data-i18n="exampleTitle">線上製作天空之鏡倒影照片</h2>
+          <p class="empty-body" data-i18n="exampleBody1">「天空之鏡」是鹽湖或雨後薄水把整片天空翻到地面的景象。上傳風景照、拖白線定出水面位置，線以下就變成倒影，可調倒影長度、水色與水波；照片不會上傳，全部在瀏覽器內完成。</p>
+        </div>
+
       <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="上傳照片" data-i18n-aria="uploadAria">
-        <svg class="dz-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-          <rect x="5" y="9" width="38" height="30" rx="4" stroke="currentColor" stroke-width="1.6"/>
-          <circle cx="16" cy="19" r="3.2" stroke="currentColor" stroke-width="1.6"/>
-          <path d="M8 34l9.5-10 7.5 7.5L31 25l9 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+        <figure class="dz-example">
+          <div class="dz-pair">
+            <div class="dz-shot">
+              <img src="assets/sample-before.webp" width="1280" height="960" loading="lazy" decoding="async"
+                   alt="十個人站在草原稜線上的剪影，天空布滿雲層，下半部是一片暗色草地，尚未套用倒影效果" data-i18n-alt="exampleBeforeAlt">
+              <span class="dz-tag" data-i18n="exampleTagBefore">原始</span>
+            </div>
+            <div class="dz-shot">
+              <img src="assets/sample-after.webp" width="1280" height="960" loading="lazy" decoding="async"
+                   alt="同一張剪影照片套用天空之鏡效果後，下半部變成鏡面水面，映出整片天空與每個人的倒影" data-i18n-alt="exampleAfterAlt">
+              <span class="dz-tag" data-i18n="exampleTagAfter">套用後</span>
+            </div>
+          </div>
+          <figcaption class="dz-caption" data-i18n="exampleCaption">左：原始照片。右：同一張照片套用倒影後的結果，由這個工具直接輸出。</figcaption>
+        </figure>
+
         <p class="dz-title" data-i18n="dzTitle">拖放風景照到這裡</p>
         <p class="dz-sub"><span data-i18n="dzOr">或</span> <span class="dz-link" data-i18n="dzChoose">選擇照片</span></p>
         <p class="dz-hint" data-i18n="dzHint">上傳後拖曳白線決定水面位置，再調整倒影與水色。支援 JPEG、PNG、WebP，也可直接貼上（Ctrl/⌘+V）。</p>
         <p class="dz-privacy" data-i18n="privacyShort">照片不會上傳，只在你的瀏覽器裡處理。</p>
+      </div>
       </div>
 
       <div class="canvas-frame" id="canvasFrame" hidden>
