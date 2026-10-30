@@ -26,8 +26,9 @@ jobs:
       - name: Assemble site (whitelist)
         run: |
           mkdir -p _site/assets
-          cp index.html styles.css render.js app.js robots.txt _site/
-          cp assets/favicon.svg _site/assets/
+          cp index.html styles.css render.js app.js robots.txt sitemap.xml _site/
+          cp assets/favicon.svg assets/og.jpg _site/assets/
+          cp assets/sample-before.webp assets/sample-after.webp _site/assets/
           find _site -type f | sort
 
       - uses: actions/configure-pages@v6
