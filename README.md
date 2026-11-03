@@ -71,6 +71,14 @@ python -m http.server 8000
 
 使用 Canvas 2D 與 Pointer Events。HEIC/HEIF 目前無法在瀏覽器解碼，請先轉成 JPEG。
 
+### AI 生成說明
+
+本專案的程式碼、介面文案與文件是在 AI 輔助下撰寫，經人工審閱、實測與調整後發布；實際行為以原始碼為準。
+
+- 示範照片**不是** AI 生成：來自 Unsplash（CC0），來源與授權詳見 [`assets/CREDITS.md`](assets/CREDITS.md)。
+- `assets/og.jpg` 是在 `og/og.html` 排版後截圖產生，背景沿用同一張示範照片。
+- `assets/favicon.svg` 為本專案原創。
+
 ### 授權
 
 MIT
@@ -137,6 +145,14 @@ Photos are processed only in your browser's memory. They are not uploaded, not s
 - Mobile: iOS Safari 16+, current Android Chrome
 
 Built on Canvas 2D and Pointer Events. HEIC/HEIF cannot currently be decoded in the browser — convert to JPEG first.
+
+### AI disclosure
+
+The code, interface copy and documentation of this project were written with AI assistance, then reviewed and tested by a human before release. The source code is the authoritative description of behaviour.
+
+- The sample photos are **not** AI-generated. They come from Unsplash (CC0) and are documented in [`assets/CREDITS.md`](assets/CREDITS.md).
+- `assets/og.jpg` is a screenshot of `og/og.html`, laid out over the same sample photo.
+- `assets/favicon.svg` is original to this project.
 
 ### License
 
