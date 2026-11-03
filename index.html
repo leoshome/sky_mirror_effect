@@ -81,16 +81,28 @@
 
       <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="上傳照片" data-i18n-aria="uploadAria">
         <figure class="dz-example">
-          <div class="dz-pair">
-            <div class="dz-shot">
-              <img src="assets/sample-before.webp" width="1280" height="960" loading="lazy" decoding="async"
-                   alt="十個人站在草原稜線上的剪影，天空布滿雲層，下半部是一片暗色草地，尚未套用倒影效果" data-i18n-alt="exampleBeforeAlt">
-              <span class="dz-tag" data-i18n="exampleTagBefore">原始</span>
+          <div class="dz-hero" id="dzHero">
+            <img class="dz-hero-img" src="assets/sample-after.webp" width="1280" height="960"
+                 fetchpriority="high" decoding="async"
+                 alt="同一張剪影照片套用天空之鏡效果後，下半部變成鏡面水面，映出整片天空與每個人的倒影" data-i18n-alt="exampleAfterAlt">
+            <img class="dz-hero-img dz-hero-before" src="assets/sample-before.webp" width="1280" height="960"
+                 fetchpriority="high" decoding="async"
+                 alt="十個人站在草原稜線上的剪影，天空布滿雲層，下半部是一片暗色草地，尚未套用倒影效果" data-i18n-alt="exampleBeforeAlt">
+            <div class="dz-hero-scrim" aria-hidden="true"></div>
+            <div class="dz-hero-copy">
+              <p class="dz-hero-title" data-i18n="appName">天空之鏡</p>
+              <p class="dz-hero-tagline" data-i18n="tagline">把風景照變成水面倒影</p>
+              <p class="dz-hero-privacy"><span class="dz-hero-dot" aria-hidden="true"></span><span data-i18n="privacyShort">照片不會上傳，只在你的瀏覽器裡處理。</span></p>
             </div>
-            <div class="dz-shot">
-              <img src="assets/sample-after.webp" width="1280" height="960" loading="lazy" decoding="async"
-                   alt="同一張剪影照片套用天空之鏡效果後，下半部變成鏡面水面，映出整片天空與每個人的倒影" data-i18n-alt="exampleAfterAlt">
-              <span class="dz-tag" data-i18n="exampleTagAfter">套用後</span>
+            <span class="dz-tag dz-tag--before" data-i18n="exampleTagBefore">原始</span>
+            <span class="dz-tag dz-tag--after" data-i18n="exampleTagAfter">套用後</span>
+            <div class="dz-divider" aria-hidden="true">
+              <span class="dz-divider-handle">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+                  <path d="M9.5 6.5 4.5 12l5 5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M14.5 6.5 19.5 12l-5 5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
             </div>
           </div>
           <figcaption class="dz-caption" data-i18n="exampleCaption">左：原始照片。右：同一張照片套用倒影後的結果，由這個工具直接輸出。</figcaption>
@@ -288,5 +300,121 @@
 
 <script src="render.js"></script>
 <script src="app.js"></script>
+<script>
+/* 首頁主視覺：一進站由左往右擦除一次，示範前後差異；桌面上之後可隨滑鼠移動對比。
+   指標監聽掛在 #dropzone（不是 hero），點擊仍會冒泡到 dropzone 開啟檔案選擇器。 */
+(function () {
+  'use strict';
+  var dropzone = document.getElementById('dropzone');
+  var hero = document.getElementById('dzHero');
+  if (!dropzone || !hero) return;
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var rafId = 0;
+  var tracking = false;
+
+  function setSplit(pct) {
+    var v = Math.max(0, Math.min(100, pct));
+    hero.style.setProperty('--split', v.toFixed(2) + '%');
+  }
+
+  function easeInOut(u) {
+    return u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+  }
+
+  /* 100% → 0%（分隔線由右往左），再柔和回到 50% 停在左右對照 */
+  function sweep() {
+    if (reduceMotion.matches) { setSplit(50); return; }
+    var travel = 1500;
+    var settle = 420;
+    var t0 = null;
+    hero.classList.add('is-sweeping');
+    setSplit(100);
+    function frame(ts) {
+      if (t0 == null) t0 = ts;
+      var t = ts - t0;
+      if (t <= travel) {
+        setSplit(100 - easeInOut(t / travel) * 100);
+        rafId = requestAnimationFrame(frame);
+        return;
+      }
+      var u = Math.min(1, (t - travel) / settle);
+      setSplit(easeInOut(u) * 50);
+      if (u < 1) { rafId = requestAnimationFrame(frame); return; }
+      rafId = 0;
+      hero.classList.remove('is-sweeping');
+    }
+    rafId = requestAnimationFrame(frame);
+  }
+
+  function stopSweep() {
+    if (!rafId) return;
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+    hero.classList.remove('is-sweeping');
+  }
+
+  /* 桌面：指標一移動就接手，改成跟隨滑鼠 */
+  dropzone.addEventListener('pointermove', function (e) {
+    if (e.pointerType === 'touch') return;
+    var rect = hero.getBoundingClientRect();
+    if (!rect.width) return;
+    stopSweep();
+    tracking = true;
+    hero.classList.add('is-scrubbing');
+    if (!rafId) {
+      var x = ((e.clientX - rect.left) / rect.width) * 100;
+      rafId = requestAnimationFrame(function () {
+        rafId = 0;
+        setSplit(x);
+      });
+    }
+  });
+
+  dropzone.addEventListener('pointerleave', function () {
+    if (!tracking) return;
+    tracking = false;
+    hero.classList.remove('is-scrubbing');
+    setSplit(50);
+  });
+
+  /* 手機沒有 hover：直接拖分隔線把手來對比，點其他地方仍會開檔 */
+  var handle = hero.querySelector('.dz-divider-handle');
+  if (handle) {
+    var dragging = false;
+
+    handle.addEventListener('pointerdown', function (e) {
+      dragging = true;
+      stopSweep();
+      tracking = false;
+      hero.classList.add('is-scrubbing');
+      try { handle.setPointerCapture(e.pointerId); } catch (err) { /* 合成事件沒有真實 pointerId */ }
+      e.preventDefault();
+    });
+
+    handle.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      var rect = hero.getBoundingClientRect();
+      if (!rect.width) return;
+      setSplit(((e.clientX - rect.left) / rect.width) * 100);
+      e.preventDefault();
+    });
+
+    function endDrag() {
+      if (!dragging) return;
+      dragging = false;
+      hero.classList.remove('is-scrubbing');
+    }
+
+    handle.addEventListener('pointerup', endDrag);
+    handle.addEventListener('pointercancel', endDrag);
+
+    /* 拖曳結束的 click 不要冒泡到 dropzone，否則會跳出選檔視窗 */
+    handle.addEventListener('click', function (e) { e.stopPropagation(); });
+  }
+
+  sweep();
+})();
+</script>
 </body>
 </html>

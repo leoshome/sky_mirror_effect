@@ -56,8 +56,8 @@ button { cursor: pointer; }
 /* ---------- 頂部 ---------- */
 
 .topbar {
-  flex: 0 0 var(--header-h);
-  height: var(--header-h);
+  flex: 0 0 auto;
+  min-height: var(--header-h);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -225,7 +225,9 @@ button { cursor: pointer; }
   container-type: size; /* 範例圖用 cqw 依框的實際寬度決定大小 */
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: safe center; /* 內容超出時不要裁掉頂端 */
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 22px 26px;
   text-align: center;
   border: 1.5px dashed rgba(255, 255, 255, .14);
@@ -240,75 +242,205 @@ button { cursor: pointer; }
   background: var(--accent-dim);
 }
 
-/* 空白狀態裡的範例對照：一眼看到成品長什麼樣，點擊仍會穿透到 dropzone 開檔 */
+/* 空白狀態裡的主視覺「天空之鏡」：寬幅前後對比擦除，一進站就看得到成品長什麼樣。
+   點擊仍會冒泡到 dropzone 開檔（整塊 pointer-events: none）。 */
 
 .dz-example {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   width: 100%;
-  max-width: 980px;
-  margin: 0 auto 22px;
+  max-width: 1120px;
+  margin: 0 auto 16px;
   pointer-events: none;
 }
 
-.dz-pair {
-  flex: 1 1 auto;
-  min-height: 0;
-  /* 對照圖以高度驅動寬度（圖是 4:3）。
-     上限 = 框寬扣掉內距與間隙後，單張圖在 4:3 下的高度；
-     框變窄時上限要跟著縮，否則寬度會被 max-width 夾住而壓扁圖片。
-     364px 是不支援 container query 時的退路（980 / 2 / (4/3)）。 */
-  max-height: 364px;
-  max-height: min(364px, calc((100cqw - 10px) * 0.375));
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.dz-shot {
+.dz-hero {
+  --split: 50%;
   position: relative;
-  height: 100%;
-  aspect-ratio: 1280 / 960;
-  min-width: 0;
-  max-width: calc(50% - 5px);
-  border: 1px solid var(--line);
-  border-radius: 10px;
+  align-self: center;
+  /* 自己的寬度也當容器：標題字級跟著主視覺縮放，窄視窗才不會折成兩行 */
+  container-type: inline-size;
+  /* 寬度由「框高扣掉下方文字列」反推，維持 16:9：短視窗不會溢出，也不會把拖放提示擠出畫面 */
+  width: min(100%, 1120px);
+  width: min(100%, 1120px, calc(max(220px, 100cqh - 150px) * 1.7778));
+  aspect-ratio: 16 / 9;
+  border-radius: 14px;
   overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .16);
   background: #090b0d;
-  box-shadow: 0 18px 40px -22px rgba(0, 0, 0, .85);
+  box-shadow:
+    0 34px 80px -32px rgba(0, 0, 0, .9),
+    0 0 90px -34px rgba(111, 227, 196, .28);
+  isolation: isolate;
 }
 
-.dz-shot img {
-  display: block;
+.dz-hero-img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: 50% 50%;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* 左側「原始」蓋在上面，右側「套用後」是底圖；--split 控制擦除位置 */
+.dz-hero-before {
+  clip-path: inset(0 calc(100% - var(--split)) 0 0);
+  transition: clip-path .55s var(--ease);
+}
+
+.dz-hero-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(9, 11, 13, .82) 0%, rgba(9, 11, 13, .46) 34%, rgba(9, 11, 13, 0) 62%),
+    linear-gradient(0deg, rgba(9, 11, 13, .62) 0%, rgba(9, 11, 13, 0) 46%);
+}
+
+.dz-hero-copy {
+  position: absolute;
+  left: clamp(16px, 3.4cqw, 40px);
+  bottom: clamp(14px, 4cqw, 34px);
+  max-width: min(62%, 540px);
+  pointer-events: none;
+}
+
+.dz-hero-title {
+  margin: 0;
+  font-size: clamp(2.1rem, 9.4cqw, 4.4rem);
+  line-height: 1.02;
+  font-weight: 800;
+  letter-spacing: .16em;
+  color: #f4f7f6;
+  text-shadow: 0 2px 34px rgba(0, 0, 0, .55);
+}
+
+.dz-hero-title::before {
+  content: "";
+  display: block;
+  width: clamp(34px, 5cqw, 54px);
+  height: 3px;
+  margin-bottom: clamp(8px, 1.2cqw, 14px);
+  border-radius: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 14px rgba(111, 227, 196, .55);
+}
+
+.dz-hero-tagline {
+  margin: clamp(6px, 1cqw, 12px) 0 0;
+  font-size: clamp(.8rem, 2.3cqw, 1.22rem);
+  font-weight: 500;
+  letter-spacing: .1em;
+  color: rgba(240, 244, 243, .94);
+  text-shadow: 0 1px 18px rgba(0, 0, 0, .5);
+}
+
+.dz-hero-privacy {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: clamp(8px, 1.4cqw, 14px) 0 0;
+  font-size: clamp(.56rem, 1.42cqw, .74rem);
+  letter-spacing: .04em;
+  color: rgba(233, 237, 240, .68);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, .45);
+}
+
+.dz-hero-dot {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(111, 227, 196, .8);
 }
 
 .dz-tag {
   position: absolute;
-  top: 9px;
-  left: 9px;
-  padding: 2px 8px;
+  top: 12px;
+  z-index: 2;
+  max-width: calc(50% - 18px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 3px 10px;
   border-radius: 999px;
-  background: rgba(9, 11, 13, .74);
-  border: 1px solid var(--line);
+  background: rgba(9, 11, 13, .68);
+  border: 1px solid var(--line-strong);
   color: var(--text-2);
-  font-size: 10.5px;
-  line-height: 1.5;
-  letter-spacing: .02em;
+  font-size: .6875rem;
+  line-height: 1.55;
+  letter-spacing: .06em;
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
+  pointer-events: none;
+}
+
+.dz-tag--before { left: 12px; }
+
+.dz-tag--after {
+  right: 12px;
+  color: var(--accent);
+  border-color: rgba(111, 227, 196, .45);
+}
+
+.dz-divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--split);
+  z-index: 2;
+  width: 2px;
+  transform: translateX(-1px);
+  background: linear-gradient(180deg, rgba(255, 255, 255, .96), rgba(255, 255, 255, .6));
+  box-shadow: 0 0 20px rgba(0, 0, 0, .55);
+  transition: left .55s var(--ease);
+  pointer-events: none;
+}
+
+.dz-divider-handle {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  width: 46px;
+  height: 46px;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #f4f7f6;
+  background: rgba(9, 11, 13, .52);
+  border: 1.5px solid rgba(255, 255, 255, .85);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, .45), inset 0 0 12px rgba(255, 255, 255, .08);
+  pointer-events: auto;
+  touch-action: none;
+  cursor: ew-resize;
+}
+
+/* 進場掃描與滑鼠跟隨時要即時跟手，不要疊加 CSS 緩動 */
+.dz-hero.is-sweeping .dz-hero-before,
+.dz-hero.is-sweeping .dz-divider,
+.dz-hero.is-scrubbing .dz-hero-before,
+.dz-hero.is-scrubbing .dz-divider {
+  transition: none;
 }
 
 .dz-caption {
   flex: 0 0 auto;
-  margin: 9px 0 0;
+  margin: 10px 0 0;
   color: var(--muted);
-  font-size: 12px;
-  line-height: 1.6;
+  font-size: .72rem;
+  line-height: 1.55;
+  text-align: center;
 }
 
 .dz-title {
@@ -1311,14 +1443,33 @@ input[type="range"]::-moz-range-thumb {
   .empty-state { gap: 12px; }
   .empty-title { font-size: 16px; }
   .empty-body { margin-top: 6px; font-size: 12.5px; line-height: 1.65; }
-  .dropzone { padding: 16px 14px; }
-  .dz-example { margin-bottom: 16px; }
-  .dz-pair { gap: 7px; max-height: min(364px, calc((100cqw - 7px) * 0.375)); }
-  .dz-shot { border-radius: 8px; }
-  .dz-tag { top: 6px; left: 6px; padding: 1px 6px; font-size: 9.5px; }
+  .dropzone { padding: 14px 12px; }
+  .dz-example { margin-bottom: 12px; }
+  .dz-hero { aspect-ratio: 16 / 10; border-radius: 12px; }
+  .dz-hero-copy { left: 14px; bottom: 12px; max-width: 88%; }
+  .dz-hero-title { letter-spacing: .1em; }
+  .dz-hero-tagline { letter-spacing: .05em; }
+  .dz-tag { top: 8px; padding: 1px 7px; font-size: 9.5px; }
+  .dz-tag--before { left: 8px; }
+  .dz-tag--after { right: 8px; }
+  .dz-divider-handle { width: 38px; height: 38px; top: 30%; }
   .dz-caption { margin-top: 7px; font-size: 11px; }
   .dz-title { font-size: 14px; }
   .dz-hint { margin-top: 10px; font-size: 11px; }
+}
+
+/* 短視窗（例如 1280×620 的筆電）：壓縮說明文字，讓主視覺與「拖放風景照到這裡」都留在畫面內 */
+@media (min-width: 900px) and (max-height: 720px) {
+  .dropzone { padding-top: 12px; padding-bottom: 12px; }
+  .empty-body {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .dz-example { margin-bottom: 10px; }
+  .dz-caption { margin-top: 6px; }
+  .dz-hint { margin-top: 8px; }
 }
 
 /* 手機底部面板是 fixed，空白狀態尾端要讓開，否則被面板蓋住 */
