@@ -246,7 +246,7 @@ button { cursor: pointer; }
    點擊仍會冒泡到 dropzone 開檔（整塊 pointer-events: none）。 */
 
 .dz-example {
-  flex: 1 1 auto;
+  flex: 1 0 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -261,6 +261,7 @@ button { cursor: pointer; }
   --split: 50%;
   position: relative;
   align-self: center;
+  flex: 0 0 auto;
   /* 自己的寬度也當容器：標題字級跟著主視覺縮放，窄視窗才不會折成兩行 */
   container-type: inline-size;
   /* 寬度由「框高扣掉下方文字列」反推，維持 16:9：短視窗不會溢出，也不會把拖放提示擠出畫面 */
